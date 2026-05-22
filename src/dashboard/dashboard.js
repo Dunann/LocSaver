@@ -6,11 +6,11 @@ import {
 import { parseTakeout } from '../lib/takeout.js';
 import { toKml } from '../lib/kml.js';
 import { reverseGeocode } from '../lib/geocode.js';
-import { isPlaceable, gmapsLink, countryNameFromCode } from '../lib/model.js';
+import { isPlaceable, gmapsLink, countryNameFromCode, SOURCE_META } from '../lib/model.js';
 
 const L = window.L;
-const SOURCE_COLORS = { geoguessr: '#e0567a', gmaps: '#2b7de0', takeout: '#7a4fd0' };
-const SOURCE_LABELS = { geoguessr: 'GeoGuessr', gmaps: 'Google Maps', takeout: 'Imported' };
+const sourceColor = (s) => (SOURCE_META[s] && SOURCE_META[s].color) || '#0e7c66';
+const sourceLabel = (s) => (SOURCE_META[s] && SOURCE_META[s].label) || s;
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
@@ -30,7 +30,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 const markers = L.layerGroup().addTo(map);
 
 function markerIcon(source) {
-  const color = SOURCE_COLORS[source] || '#0e7c66';
+  const color = sourceColor(source);
   return L.divIcon({
     className: 'lsv-mk',
     html: `<span style="background:${color}"></span>`,
@@ -110,7 +110,7 @@ function renderCountryOptions() {
 function renderList(rows) {
   const list = $('list');
   if (!rows.length) {
-    list.innerHTML = '<div class="empty">No locations match. Save some from GeoGuessr or Google Maps, or import a Takeout file.</div>';
+    list.innerHTML = '<div class="empty">No locations match. Save some from GeoGuessr, Google Maps, Apple Maps, or Bing — or import a Takeout file.</div>';
     return;
   }
   list.innerHTML = rows.map(cardHtml).join('');
@@ -124,7 +124,7 @@ function cardHtml(r) {
   return `<article class="card" data-id="${esc(r.id)}">
     <div class="card-head">
       <span class="card-title" data-act="focus">${esc(title)}</span>
-      <span class="badge ${esc(r.source)}">${esc(SOURCE_LABELS[r.source] || r.source)}</span>
+      <span class="badge" style="background:${sourceColor(r.source)}">${esc(sourceLabel(r.source))}</span>
     </div>
     <div class="card-meta">${esc(place)}</div>
     <div class="card-meta">
@@ -309,4 +309,13 @@ function updateBadge() {
   try { chrome.runtime.sendMessage({ type: 'REFRESH_BADGE' }); } catch { /* ignore */ }
 }
 
+// Build the source filter from the registry so new providers appear automatically.
+function populateSourceFilter() {
+  $('sourceFilter').innerHTML = '<option value="">All sources</option>'
+    + Object.entries(SOURCE_META)
+      .map(([id, m]) => `<option value="${id}">${esc(m.label)}</option>`)
+      .join('');
+}
+
+populateSourceFilter();
 load();

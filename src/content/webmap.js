@@ -1,14 +1,18 @@
-// LocSaver — Google Maps content script (isolated world).
-// Sends the current Maps URL to the worker, which extracts the coordinate.
+// LocSaver — generic web-map content script (Google Maps, Apple Maps, Bing Maps).
+// These maps all expose the current coordinate in the page URL, so this script
+// just sends location.href to the service worker, which picks the right provider
+// and extracts the coordinate. (GeoGuessr is the exception — see geoguessr-*.js.)
 (function () {
-  if (window.__lsvGmapsLoaded) return;
-  window.__lsvGmapsLoaded = true;
+  if (window.__lsvWebmapLoaded) return;
+  window.__lsvWebmapLoaded = true;
 
   const { toast, makeFab } = window.__lsvUi;
   const fab = makeFab('Save location', onSave);
 
   function pageTitle() {
-    return (document.title || '').replace(/\s*[-–]\s*Google Maps\s*$/i, '').trim() || null;
+    return (document.title || '')
+      .replace(/\s*[-–|]\s*(Google Maps|Apple Maps|Bing Maps).*$/i, '')
+      .trim() || null;
   }
 
   async function onSave() {
@@ -16,7 +20,7 @@
     try {
       const resp = await chrome.runtime.sendMessage({
         type: 'SAVE_LOCATION',
-        payload: { source: 'gmaps', url: location.href, label: pageTitle() },
+        payload: { url: location.href, label: pageTitle() },
       });
       if (!resp || !resp.ok) {
         toast(resp && resp.error === 'no-coordinates'

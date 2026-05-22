@@ -1,8 +1,9 @@
 # LocSaver
 
 A Chrome/Edge browser extension (Manifest V3) that lets you **save a location with
-one click** from **GeoGuessr** and **Google Maps**, then review everything on one
-**filterable map** — organised by country, with notes and tags.
+one click** from **GeoGuessr** and major **web maps** — Google Maps, Apple Maps,
+and Bing Maps — then review everything on one **filterable map**, organised by
+country, with notes and tags.
 
 It also **imports your existing Google saved places** from a Google Takeout export.
 
@@ -13,8 +14,9 @@ It also **imports your existing Google saved places** from a Google Takeout expo
 - **One-click save in GeoGuessr** — a floating *Save location* button captures the
   real coordinate of the current round (read from the page's network data, not the
   server — see [notes](#how-geoguessr-capture-works)).
-- **One-click save in Google Maps** — saves the place/pin you're viewing, parsed
-  from the Maps URL.
+- **One-click save in web maps** — Google Maps, Apple Maps, and Bing Maps; saves the
+  place/pin you're viewing, parsed from the map URL. Adding another web map is a small
+  `src/lib/providers.js` entry.
 - **Unified dashboard** — a Leaflet map + searchable, sortable list of everything
   you've saved. Filter by **country**, **source**, or free text; add **notes** and
   **tags**; jump to any point on the map.
@@ -56,9 +58,10 @@ Requires Chrome/Edge 111+ (for `MAIN`-world content scripts).
 - **GeoGuessr** — play a round at [geoguessr.com](https://www.geoguessr.com). Once the
   panorama loads, the *Save location* button (top-right) becomes active; click it to
   save the current location. It greys out until a location is detected.
-- **Google Maps** — open a place or drop a pin at
-  [google.com/maps](https://www.google.com/maps), then click *Save location*. If the
-  view has no specific coordinate yet, you'll be told to open a place / drop a pin.
+- **Web maps** — open a place or drop a pin on Google Maps, Apple Maps
+  ([maps.apple.com](https://maps.apple.com)), or Bing Maps, then click *Save location*.
+  The coordinate is read from the page URL, so if the view has no specific coordinate
+  yet you'll be told to open a place / drop a pin first.
 - **Dashboard** — click the toolbar icon. Search/filter, click a list item to fly to it
   on the map, edit notes/tags inline, or delete.
 - **Fill countries** — if any saved point lacks a country (e.g. after an import), click
@@ -112,9 +115,10 @@ manifest.json              MV3 manifest
 src/background/            service worker — the save pipeline (parse → geocode → store)
 src/content/              content scripts
   geoguessr-main.js         MAIN world: captures round coords from the page's network
-  geoguessr.js / gmaps.js   isolated world: the Save button + messaging
+  geoguessr.js              isolated world: GeoGuessr Save button + messaging
+  webmap.js                 isolated world: Save button for Google/Apple/Bing maps
   ui.js, locsaver.css       shared button/toast UI
-src/lib/                   pure, testable modules (parse, model, geocode, kml, takeout) + storage
+src/lib/                   pure, testable modules (parse, providers, model, geocode, kml, takeout) + storage
 src/dashboard/            the review dashboard (Leaflet map + list + import/export)
 src/vendor/               Leaflet (vendored; MV3 CSP forbids loading it from a CDN)
 tools/                     icon generator + syntax checker

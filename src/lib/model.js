@@ -1,7 +1,17 @@
 // Pure helpers for building, de-duplicating, and describing saved-location records.
 import { isValidLatLng } from './parse.js';
 
-export const SOURCES = ['geoguessr', 'gmaps', 'takeout'];
+// Display metadata for every source. The dashboard derives its colours, labels,
+// and source filter from this, so adding a provider here is enough to surface it.
+export const SOURCE_META = {
+  geoguessr: { label: 'GeoGuessr', color: '#e0567a' },
+  gmaps: { label: 'Google Maps', color: '#2b7de0' },
+  applemaps: { label: 'Apple Maps', color: '#5e5ce6' },
+  bing: { label: 'Bing Maps', color: '#ef6c00' },
+  takeout: { label: 'Imported', color: '#7a4fd0' },
+};
+
+export const SOURCES = Object.keys(SOURCE_META);
 
 export function makeId() {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();

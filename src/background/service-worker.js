@@ -1,8 +1,8 @@
 // LocSaver background service worker (ES module).
 // Owns the single "save" pipeline: parse -> reverse-geocode -> store -> badge.
 // Content scripts can't make cross-origin geocoding requests (page CSP/CORS),
-// so they send coordinates here and we do the network + storage work.
-import { parseGmapsUrl } from '../lib/parse.js';
+// so they send coordinates (or a map URL) here and we do the network + storage.
+import { providerForUrl } from '../lib/providers.js';
 import { reverseGeocode } from '../lib/geocode.js';
 import {
   addLocation, getCachedGeocode, setCachedGeocode, countLocations,
@@ -46,10 +46,15 @@ async function cachedReverseGeocode(lat, lng) {
 async function handleSave(payload = {}) {
   let { lat, lng, label, source, sourceUrl } = payload;
 
-  // The Google Maps content script sends a raw URL rather than coordinates.
+  // Web-map content scripts send a raw URL; figure out which provider it is and
+  // parse the coordinate (the source is derived from the provider).
   if ((lat == null || lng == null) && payload.url) {
-    const parsed = parseGmapsUrl(payload.url);
-    if (parsed) { lat = parsed.lat; lng = parsed.lng; label = label || parsed.label; }
+    const provider = providerForUrl(payload.url);
+    if (provider) {
+      source = source || provider.id;
+      const parsed = provider.parse(payload.url);
+      if (parsed) { lat = parsed.lat; lng = parsed.lng; label = label || parsed.label; }
+    }
     sourceUrl = sourceUrl || payload.url;
   }
 

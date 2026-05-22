@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "LocSaver",
-  "version": "0.1.1",
+  "version": "0.2.1",
   "description": "Save locations from GeoGuessr and Google Maps with one click, then review them all on one filterable map.",
   "minimum_chrome_version": "111",
   "permissions": ["storage", "unlimitedStorage", "tabs"],
@@ -39,8 +39,15 @@
       "run_at": "document_idle"
     },
     {
-      "matches": ["https://www.google.com/maps*", "https://maps.google.com/*"],
-      "js": ["src/content/ui.js", "src/content/gmaps.js"],
+      "matches": [
+        "https://www.google.com/maps*",
+        "https://maps.google.com/*",
+        "https://maps.apple.com/*",
+        "https://beta.maps.apple.com/*",
+        "https://www.bing.com/maps*",
+        "https://bing.com/maps*"
+      ],
+      "js": ["src/content/ui.js", "src/content/webmap.js"],
       "css": ["src/content/locsaver.css"],
       "run_at": "document_idle"
     }
