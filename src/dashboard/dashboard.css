@@ -124,16 +124,23 @@ body {
 
 .empty { padding: 32px 16px; color: var(--muted); text-align: center; }
 
-/* Map markers (no image assets needed). */
-.lsv-mk span {
-  display: block;
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+/* Map markers: colour-coded SVG location pins (colour set per source). */
+.lsv-pin svg { display: block; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45)); }
+
+.leaflet-popup-content { font: 13px/1.4 system-ui, sans-serif; margin: 10px 12px; }
+.leaflet-popup-content a { color: #0b6353; text-decoration: none; }
+.leaflet-popup-content a:hover { text-decoration: underline; }
+.lsv-pop-title { font-weight: 700; }
+.lsv-pop-place { color: #555; font-size: 12px; margin-top: 2px; }
+.lsv-sv {
+  display: block; width: 100%; height: 150px; border: 0;
+  border-radius: 6px; margin: 8px 0 6px; background: #11151a;
 }
-.leaflet-popup-content { font: 13px/1.4 system-ui, sans-serif; }
-.leaflet-popup-content a { color: #0b6353; }
+.lsv-pop-links { font-size: 12px; }
+.lsv-pop-coords {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px; color: #777; margin-top: 4px;
+}
 
 .import-report {
   position: fixed; right: 16px; bottom: 16px; max-width: 380px; max-height: 50vh;

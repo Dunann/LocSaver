@@ -19,7 +19,9 @@ It also **imports your existing Google saved places** from a Google Takeout expo
   `src/lib/providers.js` entry.
 - **Unified dashboard** — a Leaflet map + searchable, sortable list of everything
   you've saved. Filter by **country**, **source**, or free text; add **notes** and
-  **tags**; jump to any point on the map.
+  **tags**; jump to any point on the map. Map markers are colour-coded **location
+  pins** by source, and clicking one shows an inline **Google Street View** preview
+  of the spot (free, no API key — with an "Open in Street View" link as fallback).
 - **Country organisation** — coordinates are reverse-geocoded to country/region/city
   automatically (free, keyless) so you can filter by where they are.
 - **Import existing saved places** from Google Takeout (`Saved Places.json` and list
@@ -93,9 +95,10 @@ need updating when GeoGuessr changes its payloads.
 ## Privacy
 
 All saved locations stay in `chrome.storage.local` on your machine. The only network
-calls are: OpenStreetMap map tiles (dashboard), and reverse geocoding to
-`api.bigdatacloud.net` (primary) / `nominatim.openstreetmap.org` (fallback). Use
-**Export JSON** to back up or move your data.
+calls are: OpenStreetMap map tiles (dashboard), reverse geocoding to
+`api.bigdatacloud.net` (primary) / `nominatim.openstreetmap.org` (fallback), and a
+key-less Google Street View embed (`maps.google.com`) loaded only when you open a
+pin's preview. Use **Export JSON** to back up or move your data.
 
 ## Development
 

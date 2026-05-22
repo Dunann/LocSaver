@@ -29,15 +29,27 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 const markers = L.layerGroup().addTo(map);
 
-function markerIcon(source) {
-  const color = sourceColor(source);
+function pinIcon(color) {
+  const svg =
+    '<svg width="24" height="32" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">'
+    + `<path d="M12 31 C12 31 3 18 3 10 a9 9 0 1 1 18 0 c0 8 -9 21 -9 21 z" fill="${color}" stroke="#fff" stroke-width="1.5"/>`
+    + '<circle cx="12" cy="10" r="3.6" fill="#fff"/></svg>';
   return L.divIcon({
-    className: 'lsv-mk',
-    html: `<span style="background:${color}"></span>`,
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
-    popupAnchor: [0, -8],
+    className: 'lsv-pin',
+    html: svg,
+    iconSize: [24, 32],
+    iconAnchor: [12, 31],
+    popupAnchor: [0, -30],
+    tooltipAnchor: [0, -28],
   });
+}
+
+// Street View: a free, key-less interactive embed + the official deep link.
+function streetViewEmbed(lat, lng) {
+  return `https://maps.google.com/maps?q=&layer=c&cbll=${lat},${lng}&cbp=11,0,0,0,0&output=svembed`;
+}
+function streetViewLink(lat, lng) {
+  return `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
 }
 
 // --- data load + render ---
@@ -138,20 +150,34 @@ function cardHtml(r) {
   </article>`;
 }
 
+function popupHtml(r) {
+  const title = r.label || r.city || `${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}`;
+  const place = [r.city, r.region, r.country].filter(Boolean).join(', ');
+  const map = gmapsLink(r);
+  return `<div class="lsv-pop">
+    <div class="lsv-pop-title">${esc(title)}</div>
+    ${place ? `<div class="lsv-pop-place">${esc(place)}</div>` : ''}
+    <iframe class="lsv-sv" loading="lazy" referrerpolicy="no-referrer" allowfullscreen
+      src="${esc(streetViewEmbed(r.lat, r.lng))}"></iframe>
+    <div class="lsv-pop-links">
+      <a href="${esc(streetViewLink(r.lat, r.lng))}" target="_blank" rel="noreferrer">Street View ↗</a>${map ? ` · <a href="${esc(map)}" target="_blank" rel="noreferrer">Map ↗</a>` : ''}
+    </div>
+    <div class="lsv-pop-coords">${r.lat.toFixed(5)}, ${r.lng.toFixed(5)}</div>
+  </div>`;
+}
+
 function renderMarkers(rows) {
   markers.clearLayers();
   markerById.clear();
   for (const r of rows) {
     if (!isPlaceable(r)) continue;
-    const m = L.marker([r.lat, r.lng], { icon: markerIcon(r.source) });
+    const m = L.marker([r.lat, r.lng], { icon: pinIcon(sourceColor(r.source)) });
     const title = r.label || r.city || `${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}`;
     const place = [r.city, r.region, r.country].filter(Boolean).join(', ');
-    const link = gmapsLink(r);
-    m.bindPopup(
-      `<b>${esc(title)}</b><br>${esc(place)}<br>` +
-      `<span style="font-family:monospace">${r.lat.toFixed(5)}, ${r.lng.toFixed(5)}</span>` +
-      (link ? `<br><a href="${esc(link)}" target="_blank" rel="noreferrer">Open in Google Maps ↗</a>` : ''),
-    );
+    // Hover: quick text tooltip. Click: full popup with the Street View preview
+    // (loading an iframe on every hover would be far too heavy).
+    m.bindTooltip(`<b>${esc(title)}</b>${place ? `<br>${esc(place)}` : ''}`, { direction: 'top' });
+    m.bindPopup(() => popupHtml(r), { minWidth: 264, maxWidth: 280 });
     m.addTo(markers);
     markerById.set(r.id, m);
   }
