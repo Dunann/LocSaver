@@ -1,0 +1,17 @@
+# Claude Code local config
+.claude/
+
+# Dependencies
+node_modules/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+
+# Logs
+*.log
+
+# LocSaver data exports (only if downloaded into the repo dir)
+locsaver-export.json
+locsaver.kml

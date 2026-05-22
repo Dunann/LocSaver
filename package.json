@@ -1,0 +1,12 @@
+{
+  "name": "locsaver",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "description": "Save locations from GeoGuessr and Google Maps with one click, then review them all on one filterable map.",
+  "scripts": {
+    "test": "node --test",
+    "check": "node tools/check.mjs",
+    "gen-icons": "node tools/gen-icons.mjs"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "LocSaver",
+  "version": "0.1.1",
+  "description": "Save locations from GeoGuessr and Google Maps with one click, then review them all on one filterable map.",
+  "minimum_chrome_version": "111",
+  "permissions": ["storage", "unlimitedStorage", "tabs"],
+  "host_permissions": [
+    "https://api.bigdatacloud.net/*",
+    "https://nominatim.openstreetmap.org/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Open LocSaver dashboard"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "options_ui": {
+    "page": "src/dashboard/dashboard.html",
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.geoguessr.com/*"],
+      "js": ["src/content/geoguessr-main.js"],
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://*.geoguessr.com/*"],
+      "js": ["src/content/ui.js", "src/content/geoguessr.js"],
+      "css": ["src/content/locsaver.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://www.google.com/maps*", "https://maps.google.com/*"],
+      "js": ["src/content/ui.js", "src/content/gmaps.js"],
+      "css": ["src/content/locsaver.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

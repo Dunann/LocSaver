@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LocSaver</title>
+  <link rel="stylesheet" href="../vendor/leaflet.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="pin"></span> LocSaver</div>
+    <div class="stats" id="stats">Loading…</div>
+    <div class="actions">
+      <label class="btn file-btn" title="Import a Google Takeout export (Saved Places .json or list .csv)">
+        Import Takeout
+        <input type="file" id="importFile" accept=".json,.csv" multiple hidden />
+      </label>
+      <button class="btn" id="fillCountries" title="Reverse-geocode any locations missing a country">Fill countries</button>
+      <button class="btn" id="exportJson">Export JSON</button>
+      <button class="btn" id="exportKml" title="For import into Google My Maps">Export KML</button>
+      <button class="btn danger" id="clearAll">Clear all</button>
+    </div>
+  </header>
+
+  <div class="filters">
+    <input type="search" id="search" placeholder="Search name, notes, tags, city…" />
+    <select id="countryFilter"><option value="">All countries</option></select>
+    <select id="sourceFilter">
+      <option value="">All sources</option>
+      <option value="geoguessr">GeoGuessr</option>
+      <option value="gmaps">Google Maps</option>
+      <option value="takeout">Imported</option>
+    </select>
+    <select id="sortBy">
+      <option value="newest">Newest first</option>
+      <option value="oldest">Oldest first</option>
+      <option value="country">Country A–Z</option>
+    </select>
+  </div>
+
+  <main class="layout">
+    <div id="map"></div>
+    <section id="list" class="list" aria-label="Saved locations"></section>
+  </main>
+
+  <div id="importReport" class="import-report" hidden></div>
+
+  <script src="../vendor/leaflet.js"></script>
+  <script type="module" src="dashboard.js"></script>
+</body>
+</html>

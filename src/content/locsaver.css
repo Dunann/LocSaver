@@ -1,0 +1,45 @@
+/* LocSaver injected UI: floating Save button + toast. Prefixed to avoid clashes. */
+.lsv-fab {
+  position: fixed;
+  z-index: 2147483646;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 999px;
+  background: #0e7c66;
+  color: #fff;
+  font: 600 14px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.15s ease, opacity 0.15s ease;
+}
+.lsv-fab:hover { background: #0b6353; }
+.lsv-fab:active { transform: scale(0.96); }
+.lsv-fab[disabled] { opacity: 0.5; cursor: default; }
+.lsv-fab svg { width: 18px; height: 18px; fill: currentColor; flex: none; }
+
+.lsv-top-right { top: 72px; right: 20px; }
+.lsv-bottom-left { bottom: 20px; left: 20px; }
+
+.lsv-toast {
+  position: fixed;
+  z-index: 2147483647;
+  top: 120px;
+  right: 20px;
+  max-width: 300px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #1b1b1b;
+  color: #fff;
+  font: 500 13px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+.lsv-toast.lsv-show { opacity: 1; transform: translateY(0); }
+.lsv-toast.lsv-error { background: #8a1f1f; }

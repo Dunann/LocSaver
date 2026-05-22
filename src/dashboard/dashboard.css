@@ -1,0 +1,147 @@
+:root {
+  --bg: #14171c;
+  --panel: #1c2128;
+  --panel-2: #232a33;
+  --line: #2c3540;
+  --text: #e7ecf2;
+  --muted: #93a1b1;
+  --accent: #0e7c66;
+  --accent-h: #129d81;
+  --danger: #b3431f;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+.brand { font-weight: 700; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+.brand .pin {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 3px rgba(14, 124, 102, 0.3);
+}
+.stats { color: var(--muted); flex: 1; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--text);
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn:hover { background: #2b3440; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn.danger { border-color: #5a2517; color: #f0b3a3; }
+.btn.danger:hover { background: #3a1c13; }
+.file-btn { display: inline-flex; align-items: center; }
+
+.filters {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.filters input, .filters select {
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 13px;
+}
+.filters input[type="search"] { flex: 1; min-width: 180px; }
+
+.layout { flex: 1; min-height: 0; display: flex; }
+#map { flex: 1; min-width: 0; background: #0c0f13; }
+.list {
+  width: 380px;
+  flex: none;
+  overflow-y: auto;
+  border-left: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.card {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.card-head { display: flex; align-items: baseline; gap: 8px; }
+.card-title { font-weight: 600; flex: 1; cursor: pointer; }
+.card-title:hover { color: var(--accent-h); }
+.badge {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 999px; color: #fff; white-space: nowrap;
+}
+.badge.geoguessr { background: #e0567a; }
+.badge.gmaps { background: #2b7de0; }
+.badge.takeout { background: #7a4fd0; }
+
+.card-meta { color: var(--muted); font-size: 12px; margin: 4px 0; }
+.card-meta a { color: var(--accent-h); text-decoration: none; }
+.card-meta a:hover { text-decoration: underline; }
+.coords { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; }
+
+.card textarea, .card .tags-input {
+  width: 100%;
+  margin-top: 6px;
+  background: var(--panel-2);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 12px;
+  resize: vertical;
+}
+.card textarea { min-height: 34px; }
+.card-actions { margin-top: 8px; display: flex; justify-content: flex-end; }
+.link-btn {
+  background: none; border: none; color: var(--danger);
+  cursor: pointer; font-size: 12px; padding: 2px 4px;
+}
+.link-btn:hover { text-decoration: underline; }
+
+.empty { padding: 32px 16px; color: var(--muted); text-align: center; }
+
+/* Map markers (no image assets needed). */
+.lsv-mk span {
+  display: block;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+.leaflet-popup-content { font: 13px/1.4 system-ui, sans-serif; }
+.leaflet-popup-content a { color: #0b6353; }
+
+.import-report {
+  position: fixed; right: 16px; bottom: 16px; max-width: 380px; max-height: 50vh;
+  overflow: auto; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+.import-report h3 { margin: 0 0 8px; font-size: 14px; }
+.import-report ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 12px; }
+.import-report .close { float: right; }
