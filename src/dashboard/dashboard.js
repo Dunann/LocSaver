@@ -1,12 +1,13 @@
 // LocSaver dashboard: map + filterable list, import/export, inline editing.
 import {
-  getAllLocations, addMany, updateLocation, deleteLocation, clearAll,
+  getAllLocations, addLocation, addMany, updateLocation, deleteLocation, clearAll,
   getCachedGeocode, setCachedGeocode,
 } from '../lib/storage.js';
 import { parseTakeout } from '../lib/takeout.js';
 import { toKml } from '../lib/kml.js';
-import { reverseGeocode } from '../lib/geocode.js';
+import { reverseGeocode, forwardGeocode } from '../lib/geocode.js';
 import { isPlaceable, gmapsLink, countryNameFromCode, SOURCE_META } from '../lib/model.js';
+import { parseLatLngString } from '../lib/parse.js';
 
 const L = window.L;
 const sourceColor = (s) => (SOURCE_META[s] && SOURCE_META[s].color) || '#0e7c66';
@@ -29,18 +30,14 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 const markers = L.layerGroup().addTo(map);
 
-function pinIcon(color) {
-  const svg =
-    '<svg width="24" height="32" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg">'
-    + `<path d="M12 31 C12 31 3 18 3 10 a9 9 0 1 1 18 0 c0 8 -9 21 -9 21 z" fill="${color}" stroke="#fff" stroke-width="1.5"/>`
-    + '<circle cx="12" cy="10" r="3.6" fill="#fff"/></svg>';
+function markerIcon(color) {
   return L.divIcon({
-    className: 'lsv-pin',
-    html: svg,
-    iconSize: [24, 32],
-    iconAnchor: [12, 31],
-    popupAnchor: [0, -30],
-    tooltipAnchor: [0, -28],
+    className: 'lsv-mk',
+    html: `<span style="background:${color}"></span>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+    popupAnchor: [0, -8],
+    tooltipAnchor: [0, -8],
   });
 }
 
@@ -171,7 +168,7 @@ function renderMarkers(rows) {
   markerById.clear();
   for (const r of rows) {
     if (!isPlaceable(r)) continue;
-    const m = L.marker([r.lat, r.lng], { icon: pinIcon(sourceColor(r.source)) });
+    const m = L.marker([r.lat, r.lng], { icon: markerIcon(sourceColor(r.source)) });
     const title = r.label || r.city || `${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}`;
     const place = [r.city, r.region, r.country].filter(Boolean).join(', ');
     // Hover: quick text tooltip. Click: full popup with the Street View preview
@@ -343,5 +340,152 @@ function populateSourceFilter() {
       .join('');
 }
 
+// --- manual add ---
+function openAddModal() {
+  ['maQuery', 'maLabel', 'maLat', 'maLng', 'maNotes', 'maTags'].forEach((id) => { $(id).value = ''; });
+  $('maStatus').textContent = '';
+  delete $('addModal').dataset.geo;
+  $('addModal').hidden = false;
+  $('maQuery').focus();
+}
+function closeAddModal() { $('addModal').hidden = true; }
+
+async function searchPlace() {
+  const q = $('maQuery').value.trim();
+  if (!q) return;
+  const direct = parseLatLngString(q); // allow pasting "lat, lng" directly
+  if (direct) {
+    [$('maLat').value, $('maLng').value] = direct;
+    $('maStatus').textContent = 'Coordinates set from input.';
+    return;
+  }
+  $('maStatus').textContent = 'Searching…';
+  const res = await forwardGeocode(q);
+  if (!res) { $('maStatus').textContent = 'No match found — enter coordinates manually, or try a more specific query.'; return; }
+  $('maLat').value = res.lat;
+  $('maLng').value = res.lng;
+  if (!$('maLabel').value.trim() && res.label) $('maLabel').value = res.label;
+  $('addModal').dataset.geo = JSON.stringify(res);
+  $('maStatus').textContent = `Found: ${res.displayName || res.label || `${res.lat}, ${res.lng}`}`;
+}
+
+async function addManual() {
+  const lat = Number($('maLat').value);
+  const lng = Number($('maLng').value);
+  if (!isPlaceable({ lat, lng })) {
+    $('maStatus').textContent = 'Enter a valid latitude and longitude (or search a place first).';
+    return;
+  }
+  $('maAdd').disabled = true;
+  try {
+    // Reuse the search result's admin areas if it matches the entered coords.
+    let geo = null;
+    try {
+      const s = $('addModal').dataset.geo ? JSON.parse($('addModal').dataset.geo) : null;
+      if (s && Math.abs(s.lat - lat) < 1e-6 && Math.abs(s.lng - lng) < 1e-6) geo = s;
+    } catch { /* ignore */ }
+    if (!geo) {
+      geo = (await getCachedGeocode(lat, lng)) || (await reverseGeocode(lat, lng));
+      if (geo && (geo.country || geo.countryCode)) await setCachedGeocode(lat, lng, geo);
+    }
+    const { duplicate } = await addLocation({
+      lat,
+      lng,
+      label: $('maLabel').value.trim() || null,
+      source: 'manual',
+      notes: $('maNotes').value.trim(),
+      tags: $('maTags').value.split(',').map((t) => t.trim()).filter(Boolean),
+      country: (geo && geo.country) || countryNameFromCode(geo && geo.countryCode) || null,
+      countryCode: (geo && geo.countryCode) || null,
+      region: (geo && geo.region) || null,
+      city: (geo && geo.city) || null,
+    });
+    closeAddModal();
+    await load();
+    updateBadge();
+    $('stats').textContent = duplicate ? 'That location was already saved.' : 'Location added.';
+  } finally {
+    $('maAdd').disabled = false;
+  }
+}
+
+$('addManual').addEventListener('click', openAddModal);
+$('addClose').addEventListener('click', closeAddModal);
+$('maCancel').addEventListener('click', closeAddModal);
+$('maSearch').addEventListener('click', searchPlace);
+$('maQuery').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); searchPlace(); } });
+$('maAdd').addEventListener('click', addManual);
+$('addModal').addEventListener('click', (e) => { if (e.target.id === 'addModal') closeAddModal(); });
+
+// --- "find a location on this page" confirm flow (triggered from the context menu) ---
+const PENDING_KEY = 'locsaver:pending';
+
+function pageHost(p) {
+  try { return new URL(p.pageUrl).hostname.replace(/^www\./, ''); } catch { return p.pageTitle || 'this page'; }
+}
+
+function showFindModal(p) {
+  const card = $('findCard');
+  const host = pageHost(p);
+  if (!p.candidates || !p.candidates.length) {
+    card.innerHTML = `<div class="modal-head">No location found <button class="link-btn" id="findClose" type="button">close</button></div>
+      <p style="color:var(--muted);font-size:13px;margin:10px 0 0">Couldn't find a location on <b>${esc(host)}</b>. You can add one manually.</p>
+      <div class="modal-actions"><button class="btn" id="findCancel" type="button">Close</button><button class="btn primary" id="findManual" type="button">Add manually</button></div>`;
+  } else {
+    const items = p.candidates.map((c, i) => {
+      const place = [c.city, c.region, c.country].filter(Boolean).join(', ');
+      return `<label class="cand"><input type="radio" name="cand" value="${i}"${i === 0 ? ' checked' : ''} />
+        <span class="cand-main"><b>${esc(c.label || `${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}`)}</b>
+        <span class="cand-sub">${place ? `${esc(place)} · ` : ''}<span class="coords">${c.lat.toFixed(4)}, ${c.lng.toFixed(4)}</span> · ${esc(c.confidence)}</span></span></label>`;
+    }).join('');
+    card.innerHTML = `<div class="modal-head">Save a location from ${esc(host)} <button class="link-btn" id="findClose" type="button">close</button></div>
+      <div class="cand-list">${items}</div>
+      <div class="modal-actions"><button class="btn" id="findCancel" type="button">None of these</button><button class="btn primary" id="findSave" type="button">Save selected</button></div>`;
+  }
+  $('findModal').hidden = false;
+
+  const dismiss = async () => { $('findModal').hidden = true; await chrome.storage.local.remove(PENDING_KEY); };
+  $('findClose').onclick = dismiss;
+  $('findCancel').onclick = dismiss;
+  const manual = $('findManual');
+  if (manual) manual.onclick = async () => { await dismiss(); openAddModal(); };
+  const save = $('findSave');
+  if (save) {
+    save.onclick = async () => {
+      const picked = card.querySelector('input[name="cand"]:checked');
+      const c = p.candidates[Number(picked ? picked.value : 0)];
+      if (!c) return;
+      save.disabled = true;
+      let geo = { country: c.country, countryCode: c.countryCode, region: c.region, city: c.city };
+      if (!geo.country) {
+        geo = (await getCachedGeocode(c.lat, c.lng)) || (await reverseGeocode(c.lat, c.lng));
+        if (geo && (geo.country || geo.countryCode)) await setCachedGeocode(c.lat, c.lng, geo);
+      }
+      await addLocation({
+        lat: c.lat, lng: c.lng, label: c.label || null, source: 'webpage', sourceUrl: p.pageUrl,
+        country: (geo && geo.country) || countryNameFromCode(geo && geo.countryCode) || null,
+        countryCode: (geo && geo.countryCode) || null,
+        region: (geo && geo.region) || null,
+        city: (geo && geo.city) || null,
+      });
+      await dismiss();
+      await load();
+      updateBadge();
+      $('stats').textContent = 'Location added from web page.';
+    };
+  }
+}
+
+async function checkPending() {
+  const o = await chrome.storage.local.get(PENDING_KEY);
+  if (o[PENDING_KEY]) showFindModal(o[PENDING_KEY]);
+}
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes[PENDING_KEY] && changes[PENDING_KEY].newValue) {
+    showFindModal(changes[PENDING_KEY].newValue);
+  }
+});
+
 populateSourceFilter();
 load();
+checkPending();

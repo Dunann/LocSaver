@@ -1,6 +1,6 @@
 {
   "name": "locsaver",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "description": "Save locations from GeoGuessr and web maps (Google, Apple, Bing) with one click, then review them all on one filterable map.",

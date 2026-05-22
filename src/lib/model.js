@@ -8,6 +8,9 @@ export const SOURCE_META = {
   gmaps: { label: 'Google Maps', color: '#2b7de0' },
   applemaps: { label: 'Apple Maps', color: '#5e5ce6' },
   bing: { label: 'Bing Maps', color: '#ef6c00' },
+  wikipedia: { label: 'Wikipedia', color: '#94a3b8' },
+  manual: { label: 'Manual', color: '#eab308' },
+  webpage: { label: 'Web page', color: '#84cc16' },
   takeout: { label: 'Imported', color: '#7a4fd0' },
 };
 

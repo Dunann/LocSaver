@@ -12,6 +12,7 @@
     <div class="brand"><span class="pin"></span> LocSaver</div>
     <div class="stats" id="stats">Loading…</div>
     <div class="actions">
+      <button class="btn primary" id="addManual">+ Add location</button>
       <label class="btn file-btn" title="Import a Google Takeout export (Saved Places .json or list .csv)">
         Import Takeout
         <input type="file" id="importFile" accept=".json,.csv" multiple hidden />
@@ -38,6 +39,32 @@
     <div id="map"></div>
     <section id="list" class="list" aria-label="Saved locations"></section>
   </main>
+
+  <div id="addModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">Add a location <button class="link-btn" id="addClose" type="button">close</button></div>
+      <label class="fld">Search a place or address (or paste "lat, lng")
+        <span class="srch">
+          <input id="maQuery" type="text" placeholder="e.g. Eiffel Tower, Paris" />
+          <button class="btn" id="maSearch" type="button">Search</button>
+        </span>
+      </label>
+      <label class="fld">Name<input id="maLabel" type="text" placeholder="Optional" /></label>
+      <div class="grid2">
+        <label class="fld">Latitude<input id="maLat" type="number" step="any" /></label>
+        <label class="fld">Longitude<input id="maLng" type="number" step="any" /></label>
+      </div>
+      <label class="fld">Notes<textarea id="maNotes" rows="2"></textarea></label>
+      <label class="fld">Tags (comma separated)<input id="maTags" type="text" /></label>
+      <div id="maStatus" class="modal-status"></div>
+      <div class="modal-actions">
+        <button class="btn" id="maCancel" type="button">Cancel</button>
+        <button class="btn primary" id="maAdd" type="button">Add location</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="findModal" class="modal" hidden><div class="modal-card" id="findCard"></div></div>
 
   <div id="importReport" class="import-report" hidden></div>
 

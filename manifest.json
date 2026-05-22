@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "LocSaver",
-  "version": "0.3.0",
+  "version": "0.5.0",
   "description": "Save locations from GeoGuessr and Google Maps with one click, then review them all on one filterable map.",
   "minimum_chrome_version": "111",
-  "permissions": ["storage", "unlimitedStorage", "tabs"],
+  "permissions": ["storage", "unlimitedStorage", "tabs", "contextMenus", "scripting", "activeTab"],
   "host_permissions": [
     "https://api.bigdatacloud.net/*",
     "https://nominatim.openstreetmap.org/*"
@@ -48,6 +48,12 @@
         "https://bing.com/maps*"
       ],
       "js": ["src/content/ui.js", "src/content/webmap.js"],
+      "css": ["src/content/locsaver.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://*.wikipedia.org/wiki/*"],
+      "js": ["src/content/ui.js", "src/content/wikipedia.js"],
       "css": ["src/content/locsaver.css"],
       "run_at": "document_idle"
     }

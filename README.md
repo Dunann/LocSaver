@@ -17,6 +17,13 @@ It also **imports your existing Google saved places** from a Google Takeout expo
 - **One-click save in web maps** — Google Maps, Apple Maps, and Bing Maps; saves the
   place/pin you're viewing, parsed from the map URL. Adding another web map is a small
   `src/lib/providers.js` entry.
+- **Save from Wikipedia** — on an article about a place, a Save button captures the
+  article's embedded coordinate.
+- **Add manually** — a dashboard form to add a location by searching a place/address
+  (free, via OpenStreetMap) or by pasting coordinates.
+- **Find a location on any page** — right-click → *LocSaver: find a location on this
+  page*. It scrapes structured data (JSON-LD, geo meta tags, microformats) and geocodes
+  place names, then asks you to confirm the best match (or tells you none was found).
 - **Unified dashboard** — a Leaflet map + searchable, sortable list of everything
   you've saved. Filter by **country**, **source**, or free text; add **notes** and
   **tags**; jump to any point on the map. Map markers are colour-coded **location
@@ -64,6 +71,14 @@ Requires Chrome/Edge 111+ (for `MAIN`-world content scripts).
   ([maps.apple.com](https://maps.apple.com)), or Bing Maps, then click *Save location*.
   The coordinate is read from the page URL, so if the view has no specific coordinate
   yet you'll be told to open a place / drop a pin first.
+- **Wikipedia** — open an article about a place; if it has coordinates, the *Save
+  location* button appears (top-right).
+- **Add manually** — in the dashboard, click **+ Add location**, search a place or
+  address (or paste `lat, lng`), then save.
+- **Find on a page** — on any web page, right-click and choose **LocSaver: find a
+  location on this page**. The dashboard opens with the candidates it found, for you to
+  confirm. Best on pages with location metadata (businesses, events, listings); weaker
+  on pure prose.
 - **Dashboard** — click the toolbar icon. Search/filter, click a list item to fly to it
   on the map, edit notes/tags inline, or delete.
 - **Fill countries** — if any saved point lacks a country (e.g. after an import), click
@@ -98,7 +113,10 @@ All saved locations stay in `chrome.storage.local` on your machine. The only net
 calls are: OpenStreetMap map tiles (dashboard), reverse geocoding to
 `api.bigdatacloud.net` (primary) / `nominatim.openstreetmap.org` (fallback), and a
 key-less Google Street View embed (`maps.google.com`) loaded only when you open a
-pin's preview. Use **Export JSON** to back up or move your data.
+pin's preview. The "find a location on this page" command reads the current page's
+content **only when you invoke it** (the `activeTab` permission), and geocodes any
+place names it finds via OpenStreetMap. Use **Export JSON** to back up or move your
+data.
 
 ## Development
 
@@ -120,8 +138,9 @@ src/content/              content scripts
   geoguessr-main.js         MAIN world: captures round coords from the page's network
   geoguessr.js              isolated world: GeoGuessr Save button + messaging
   webmap.js                 isolated world: Save button for Google/Apple/Bing maps
+  wikipedia.js              isolated world: Save button on Wikipedia place articles
   ui.js, locsaver.css       shared button/toast UI
-src/lib/                   pure, testable modules (parse, providers, model, geocode, kml, takeout) + storage
+src/lib/                   pure, testable modules (parse, providers, model, geocode, kml, takeout, pagescan) + storage
 src/dashboard/            the review dashboard (Leaflet map + list + import/export)
 src/vendor/               Leaflet (vendored; MV3 CSP forbids loading it from a CDN)
 tools/                     icon generator + syntax checker
